@@ -42,7 +42,7 @@ git clone https://github.com/waseemnasir2k26/n8n-silent-failure-monitor && cd n8
 
 ## Why this exists
 
-An n8n workflow that errors is easy to see. One that simply stops running is not. The trigger gets deactivated, a credential expires and the schedule never fires, or the instance restarts and the workflow never comes back. Nothing errors, so nothing alerts. One agency owner reported losing a $2,500 a month client after a workflow sat silent for three days.
+An n8n workflow that errors is easy to see. One that simply stops running is not. The trigger gets deactivated, a credential expires and the schedule never fires, or the instance restarts and the workflow never comes back. Nothing errors, so nothing alerts. Often the client notices first.
 
 `check` looks for the missing runs, not just the failed ones.
 
