@@ -18,16 +18,8 @@
         --card: #faf8f2;
         --line: #d9d3c4;
       }
-      @media (prefers-color-scheme: dark) {
-        :root:not([data-theme="light"]) {
-          --bg: #1a1815;
-          --ink: #f2efe6;
-          --muted: #b4ae9f;
-          --rust: #e0764d;
-          --rust-ink: #1a1815;
-          --card: #231f1b;
-          --line: #3a342d;
-        }
+      :root {
+        color-scheme: only light;
       }
       * {
         box-sizing: border-box;
