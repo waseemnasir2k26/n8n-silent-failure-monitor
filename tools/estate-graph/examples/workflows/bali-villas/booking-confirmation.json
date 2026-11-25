@@ -1,0 +1,161 @@
+{
+  "id": "bV02",
+  "name": "Booking Confirmation",
+  "active": true,
+  "nodes": [
+    {
+      "id": "n27",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        5940,
+        300
+      ],
+      "parameters": {
+        "path": "villa/confirm",
+        "httpMethod": "POST",
+        "authentication": "none"
+      }
+    },
+    {
+      "id": "n28",
+      "name": "Verify payment",
+      "type": "n8n-nodes-base.stripe",
+      "typeVersion": 1,
+      "position": [
+        6160,
+        300
+      ],
+      "parameters": {
+        "resource": "charge",
+        "operation": "get"
+      },
+      "credentials": {
+        "stripeApi": {
+          "id": "stB1",
+          "name": "Stripe account"
+        }
+      }
+    },
+    {
+      "id": "n29",
+      "name": "Mark paid",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        6380,
+        300
+      ],
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1BaliBookingsSheetDocId000000000000000d",
+          "mode": "list",
+          "cachedResultName": "Bali Bookings"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Bookings",
+          "mode": "name",
+          "cachedResultName": "Bookings"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gsB1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "id": "n30",
+      "name": "Build receipt",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [
+        6600,
+        300
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "bV03",
+          "mode": "list",
+          "cachedResultName": "Receipt Builder"
+        }
+      }
+    },
+    {
+      "id": "n31",
+      "name": "Email guest",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 1,
+      "position": [
+        6820,
+        300
+      ],
+      "parameters": {
+        "operation": "send"
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "gmB1",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Verify payment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify payment": {
+      "main": [
+        [
+          {
+            "node": "Mark paid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark paid": {
+      "main": [
+        [
+          {
+            "node": "Build receipt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build receipt": {
+      "main": [
+        [
+          {
+            "node": "Email guest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

@@ -1,0 +1,108 @@
+{
+  "id": "aD04",
+  "name": "Appointment Reminders",
+  "active": true,
+  "nodes": [
+    {
+      "id": "n12",
+      "name": "Every morning",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        2640,
+        300
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1,
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "n13",
+      "name": "Read appointments",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        2860,
+        300
+      ],
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "1AcmeAppointmentsDocId00000000000000000b",
+          "mode": "list",
+          "cachedResultName": "Acme Appointments"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Tomorrow",
+          "mode": "name",
+          "cachedResultName": "Tomorrow"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gsA1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "id": "n14",
+      "name": "Send reminder",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 1,
+      "position": [
+        3080,
+        300
+      ],
+      "parameters": {
+        "operation": "send",
+        "subject": "Reminder"
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "gmA1",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Every morning": {
+      "main": [
+        [
+          {
+            "node": "Read appointments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read appointments": {
+      "main": [
+        [
+          {
+            "node": "Send reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": "aD06"
+  },
+  "tags": []
+}

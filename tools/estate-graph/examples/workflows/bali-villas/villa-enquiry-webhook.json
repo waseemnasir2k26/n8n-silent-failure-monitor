@@ -1,0 +1,107 @@
+{
+  "id": "bV01",
+  "name": "Villa Enquiry Webhook",
+  "active": true,
+  "nodes": [
+    {
+      "id": "n24",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        5280,
+        300
+      ],
+      "parameters": {
+        "path": "villa/enquiry",
+        "httpMethod": "POST",
+        "authentication": "headerAuth"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "haB1",
+          "name": "Enquiry header key"
+        }
+      }
+    },
+    {
+      "id": "n25",
+      "name": "Log enquiry",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        5500,
+        300
+      ],
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1BaliBookingsSheetDocId000000000000000d",
+          "mode": "list",
+          "cachedResultName": "Bali Bookings"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Enquiries",
+          "mode": "name",
+          "cachedResultName": "Enquiries"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gsB1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "id": "n26",
+      "name": "Draft reply",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1,
+      "position": [
+        5720,
+        300
+      ],
+      "parameters": {
+        "resource": "text",
+        "model": "={{ $env.OPENAI_MODEL }}"
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "oaB1",
+          "name": "OpenAI account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Log enquiry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log enquiry": {
+      "main": [
+        [
+          {
+            "node": "Draft reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

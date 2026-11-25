@@ -1,0 +1,42 @@
+{
+  "name": "n8n-retainer-report",
+  "version": "1.0.1",
+  "description": "Turn n8n execution history into a client-ready weekly email and a monthly one-page report for automation retainers.",
+  "bin": {
+    "n8n-retainer-report": "bin/n8n-retainer-report.js"
+  },
+  "main": "src/core.js",
+  "scripts": {
+    "test": "node --test",
+    "demo": "node bin/n8n-retainer-report.js --config examples/sample.config.json --from-file examples/sample-executions.json --out examples/sample --end 2026-10-24",
+    "build:workflow": "node scripts/build-workflow.js",
+    "build:sample": "node scripts/make-sample.js",
+    "screenshots": "python scripts/screenshots.py"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "bin",
+    "src",
+    "examples",
+    "docs"
+  ],
+  "keywords": [
+    "n8n",
+    "report",
+    "retainer",
+    "agency",
+    "automation"
+  ],
+  "author": "Waseem Nasir <info@skynetjoe.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/waseemnasir2k26/n8n-retainer-report.git"
+  },
+  "homepage": "https://github.com/waseemnasir2k26/n8n-retainer-report#readme",
+  "bugs": {
+    "url": "https://github.com/waseemnasir2k26/n8n-retainer-report/issues"
+  }
+}

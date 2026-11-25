@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>n8n Silent-Failure Monitor</title>
+    <meta
+      name="description"
+      content="Find the n8n workflows that quietly stopped running, before your client does. Free open-source kit today; hosted multi-client version planned."
+    />
+    <style>
+      :root {
+        --bg: #f2efe6;
+        --ink: #1f1d1a;
+        --muted: #5d584f;
+        --rust: #a8431f;
+        --rust-ink: #ffffff;
+        --card: #faf8f2;
+        --line: #d9d3c4;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          --bg: #1a1815;
+          --ink: #f2efe6;
+          --muted: #b4ae9f;
+          --rust: #e0764d;
+          --rust-ink: #1a1815;
+          --card: #231f1b;
+          --line: #3a342d;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        -webkit-text-size-adjust: 100%;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font:
+          17px/1.6 ui-sans-serif,
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          Helvetica,
+          Arial,
+          sans-serif;
+      }
+      main {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 40px 16px 64px;
+      }
+      h1 {
+        font-size: clamp(1.9rem, 6vw, 2.8rem);
+        line-height: 1.15;
+        margin: 0 0 16px;
+        letter-spacing: -0.01em;
+      }
+      h2 {
+        font-size: 1.3rem;
+        margin: 44px 0 12px;
+      }
+      p {
+        margin: 0 0 14px;
+      }
+      .kicker {
+        color: var(--rust);
+        font-weight: 600;
+        font-size: 0.85rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+      }
+      .lede {
+        font-size: 1.15rem;
+        color: var(--muted);
+      }
+      ul {
+        padding-left: 1.2em;
+        margin: 0 0 14px;
+      }
+      li {
+        margin-bottom: 8px;
+      }
+      .notice {
+        border: 1px solid var(--line);
+        border-left: 4px solid var(--rust);
+        background: var(--card);
+        padding: 14px 16px;
+        border-radius: 6px;
+        margin: 24px 0;
+      }
+      .notice strong {
+        color: var(--rust);
+      }
+      .plans {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: 1fr;
+        margin: 16px 0;
+      }
+      @media (min-width: 560px) {
+        .plans {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      .plan {
+        border: 1px solid var(--line);
+        background: var(--card);
+        border-radius: 8px;
+        padding: 16px;
+      }
+      .plan h3 {
+        margin: 0 0 4px;
+        font-size: 1.05rem;
+      }
+      .price {
+        font-size: 1.6rem;
+        font-weight: 700;
+      }
+      .price small {
+        font-size: 0.9rem;
+        font-weight: 400;
+        color: var(--muted);
+      }
+      .cta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin: 20px 0 8px;
+      }
+      .btn {
+        display: inline-block;
+        padding: 12px 20px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 600;
+        border: 2px solid var(--rust);
+        min-height: 44px;
+      }
+      .btn.primary {
+        background: var(--rust);
+        color: var(--rust-ink);
+      }
+      .btn.secondary {
+        color: var(--rust);
+        background: transparent;
+      }
+      .btn:focus-visible,
+      a:focus-visible {
+        outline: 3px solid var(--ink);
+        outline-offset: 2px;
+      }
+      a {
+        color: var(--rust);
+      }
+      pre {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 14px;
+        overflow-x: auto;
+        font:
+          0.82rem/1.5 ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          Consolas,
+          monospace;
+        margin: 0 0 14px;
+      }
+      footer {
+        margin-top: 48px;
+        padding-top: 16px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="kicker">n8n for agencies</p>
+      <h1>Your n8n workflow stopped three days ago. Nothing told you.</h1>
+      <p class="lede">
+        An error is easy to catch. A workflow that quietly stops running is not.
+        One agency owner reported losing a $2,500 a month client after a
+        three-day silent failure.
+      </p>
+
+      <div class="notice">
+        <strong>Status:</strong> the free open-source kit exists and works
+        today. The hosted version described below is
+        <strong>not built yet</strong>. Nothing here can be bought today.
+      </div>
+
+      <h2>What the free kit does today</h2>
+      <ul>
+        <li>
+          <strong>Silent-failure check.</strong> Reads each workflow's schedule,
+          compares it with the n8n API, and flags workflows that stopped running
+          or keep failing. Exits non-zero so it runs from cron.
+        </li>
+        <li>
+          <strong>Several clients, no stored secrets.</strong> One config file
+          lists clients by name. URLs and API keys stay in environment variables
+          on your machine.
+        </li>
+        <li>
+          <strong>Five more tools in the same repo.</strong> Dependency graph,
+          client reports, handover docs, a workflow linter and spend and loop
+          caps for AI agents.
+        </li>
+      </ul>
+      <pre>
+STATUS   WORKFLOW                  EXPECTED   LAST RUN  DETAIL
+STALLED  Daily invoice export      every 24h  3d ago    no run for 3d (limit 48h)
+FAILING  CRM push (every 15 min)   every 15m  5m ago    last 3 runs errored
+OK       Lead intake sync (hourly) every 60m  20m ago   last run 20m ago</pre
+      >
+      <p>
+        Sample from fake demo data.
+        <a href="https://github.com/waseemnasir2k26/n8n-silent-failure-monitor"
+          >Get the code on GitHub</a
+        >.
+      </p>
+
+      <h2>What the hosted version will add</h2>
+      <ul>
+        <li>
+          <strong>Multi-client dashboard.</strong> Every client instance in one
+          view, without running scripts yourself.
+        </li>
+        <li>
+          <strong>Alerts.</strong> A message when a workflow stalls or starts
+          failing, from a service that is not running on the same server as n8n.
+        </li>
+        <li>
+          <strong>White-label monthly client report.</strong> A report you can
+          send under your own agency name.
+        </li>
+      </ul>
+
+      <h2>Planned pricing</h2>
+      <div class="plans">
+        <div class="plan">
+          <h3>Starter</h3>
+          <div class="price">$29<small>/month</small></div>
+        </div>
+        <div class="plan">
+          <h3>Agency</h3>
+          <div class="price">$99<small>/month</small></div>
+        </div>
+      </div>
+      <p>
+        Founding users: price locked. These are planned prices, not an offer.
+        Nothing is charged until the hosted version exists and you choose to
+        subscribe.
+      </p>
+
+      <h2>Join the founding list</h2>
+      <p>
+        Tell me you want it. I will message you when there is something to try.
+       
+      </p>
+      <div class="cta">
+        <a
+          class="btn primary"
+          href="https://wa.me/6281316077185?text=Founding%20list%3A%20n8n%20silent-failure%20monitor"
+          >Join the founding list on WhatsApp</a
+        >
+        <a
+          class="btn secondary"
+          href="mailto:waseem@skynetjoe.com?subject=Founding%20list%3A%20n8n%20silent-failure%20monitor"
+          >Email</a
+        >
+      </div>
+      <p>
+        <a href="https://github.com/waseemnasir2k26/n8n-silent-failure-monitor"
+          >github.com/waseemnasir2k26/n8n-silent-failure-monitor</a
+        >
+      </p>
+
+      <footer>
+        Open source under the MIT licence. Built by Waseem Nasir. Not affiliated
+        with n8n GmbH.
+      </footer>
+    </main>
+  </body>
+</html>

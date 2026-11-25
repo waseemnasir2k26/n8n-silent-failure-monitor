@@ -1,0 +1,131 @@
+{
+  "id": "aD05",
+  "name": "Stripe Payment Sync",
+  "active": true,
+  "nodes": [
+    {
+      "id": "n15",
+      "name": "Hourly",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        3300,
+        300
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "n16",
+      "name": "List charges",
+      "type": "n8n-nodes-base.stripe",
+      "typeVersion": 1,
+      "position": [
+        3520,
+        300
+      ],
+      "parameters": {
+        "resource": "charge",
+        "operation": "getAll"
+      },
+      "credentials": {
+        "stripeApi": {
+          "id": "stA1",
+          "name": "Stripe account"
+        }
+      }
+    },
+    {
+      "id": "n17",
+      "name": "Append ledger",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        3740,
+        300
+      ],
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1AcmePaymentsLedgerDocId0000000000000000c",
+          "mode": "list",
+          "cachedResultName": "Acme Payments Ledger"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Ledger",
+          "mode": "name",
+          "cachedResultName": "Ledger"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gsA1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "id": "n18",
+      "name": "Ping status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        3960,
+        300
+      ],
+      "parameters": {
+        "url": "https://hooks.example-status.io/ping?password=FAKEDEMOPASS12345678"
+      }
+    }
+  ],
+  "connections": {
+    "Hourly": {
+      "main": [
+        [
+          {
+            "node": "List charges",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List charges": {
+      "main": [
+        [
+          {
+            "node": "Append ledger",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append ledger": {
+      "main": [
+        [
+          {
+            "node": "Ping status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": "aD06"
+  },
+  "tags": []
+}

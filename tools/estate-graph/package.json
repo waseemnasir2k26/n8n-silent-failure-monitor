@@ -1,0 +1,16 @@
+{
+  "name": "n8n-estate-graph",
+  "version": "1.0.3",
+  "description": "Map every n8n workflow you run (one instance or many clients) into a dependency graph of credentials, webhooks, sheets, hosts and sub-workflow calls, then ask what breaks if X dies.",
+  "license": "MIT",
+  "author": "Waseem Nasir <waseem@skynetjoe.com> (https://skynetjoe.com)",
+  "bin": { "n8n-estate-graph": "bin/n8n-estate-graph.js" },
+  "main": "src/graph.js",
+  "files": ["bin", "src", "examples", "README.md", "LICENSE", "CHANGELOG.md"],
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "test": "node --test",
+    "demo": "node bin/n8n-estate-graph.js build --from-dir examples/workflows/acme-dental --label acme-dental --from-dir examples/workflows/bali-villas --label bali-villas --out examples/sample-out --date 2026-11-02"
+  },
+  "keywords": ["n8n", "workflow", "dependency-graph", "blast-radius", "credentials", "audit", "automation"]
+}

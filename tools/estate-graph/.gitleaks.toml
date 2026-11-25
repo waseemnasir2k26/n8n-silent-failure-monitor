@@ -1,0 +1,6 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "synthetic fake secrets in demo workflows and test fixtures, there to prove the redaction"
+paths = ['''^examples/workflows/''', '''^test/''']

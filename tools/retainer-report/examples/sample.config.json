@@ -1,0 +1,28 @@
+{
+  "client": "Harbor Dental (sample data)",
+  "contactName": "Sarah",
+  "agency": "Example Automation Agency",
+  "currency": "$",
+  "hourlyRate": 35,
+  "recoveryWindowMinutes": 60,
+  "workflows": [
+    {
+      "id": "101",
+      "label": "Lead intake to CRM",
+      "minutesSavedPerSuccessfulRun": 6
+    },
+    {
+      "id": "102",
+      "label": "Invoice reminders",
+      "minutesSavedPerSuccessfulRun": 4
+    },
+    {
+      "tag": "harbor-support",
+      "minutesSavedPerSuccessfulRun": 3
+    }
+  ],
+  "notes": [
+    "Example note: added a retry on the CRM step so brief outages no longer need a manual re-run."
+  ],
+  "nextStep": "Example next step: confirm whether you want appointment no-show follow-ups automated next month."
+}

@@ -1,0 +1,780 @@
+{
+  "meta": {
+    "tool": "n8n-estate-graph",
+    "version": "1.0.3",
+    "date": "2026-11-02",
+    "sources": [
+      {
+        "label": "acme-dental",
+        "kind": "dir"
+      },
+      {
+        "label": "bali-villas",
+        "kind": "dir"
+      }
+    ],
+    "counts": {
+      "workflows": 10,
+      "activeWorkflows": 9,
+      "credentials": 10,
+      "hosts": 9,
+      "webhooks": 3,
+      "sheets": 4,
+      "envvars": 3,
+      "schedules": 3
+    },
+    "dynamicRefs": {
+      "hosts": 1,
+      "sheets": 0,
+      "workflows": 0,
+      "webhooks": 0
+    },
+    "inputFiles": {
+      "total": 10,
+      "skipped": 0
+    }
+  },
+  "nodes": [
+    {
+      "id": "cred:acme-dental:gmA1",
+      "type": "credential",
+      "label": "Gmail account",
+      "attrs": {
+        "credType": [
+          "gmailOAuth2"
+        ],
+        "instance": "acme-dental",
+        "n8nId": "gmA1"
+      }
+    },
+    {
+      "id": "cred:acme-dental:gsA1",
+      "type": "credential",
+      "label": "Google Sheets account",
+      "attrs": {
+        "credType": [
+          "googleSheetsOAuth2Api"
+        ],
+        "instance": "acme-dental",
+        "n8nId": "gsA1"
+      }
+    },
+    {
+      "id": "cred:acme-dental:oaA1",
+      "type": "credential",
+      "label": "OpenAI account",
+      "attrs": {
+        "credType": [
+          "openAiApi"
+        ],
+        "instance": "acme-dental",
+        "n8nId": "oaA1"
+      }
+    },
+    {
+      "id": "cred:acme-dental:slA1",
+      "type": "credential",
+      "label": "Slack account",
+      "attrs": {
+        "credType": [
+          "slackApi"
+        ],
+        "instance": "acme-dental",
+        "n8nId": "slA1"
+      }
+    },
+    {
+      "id": "cred:acme-dental:stA1",
+      "type": "credential",
+      "label": "Stripe account",
+      "attrs": {
+        "credType": [
+          "stripeApi"
+        ],
+        "instance": "acme-dental",
+        "n8nId": "stA1"
+      }
+    },
+    {
+      "id": "cred:bali-villas:gmB1",
+      "type": "credential",
+      "label": "Gmail account",
+      "attrs": {
+        "credType": [
+          "gmailOAuth2"
+        ],
+        "instance": "bali-villas",
+        "n8nId": "gmB1"
+      }
+    },
+    {
+      "id": "cred:bali-villas:gsB1",
+      "type": "credential",
+      "label": "Google Sheets account",
+      "attrs": {
+        "credType": [
+          "googleSheetsOAuth2Api"
+        ],
+        "instance": "bali-villas",
+        "n8nId": "gsB1"
+      }
+    },
+    {
+      "id": "cred:bali-villas:haB1",
+      "type": "credential",
+      "label": "Enquiry header key",
+      "attrs": {
+        "credType": [
+          "httpHeaderAuth"
+        ],
+        "instance": "bali-villas",
+        "n8nId": "haB1"
+      }
+    },
+    {
+      "id": "cred:bali-villas:oaB1",
+      "type": "credential",
+      "label": "OpenAI account",
+      "attrs": {
+        "credType": [
+          "openAiApi"
+        ],
+        "instance": "bali-villas",
+        "n8nId": "oaB1"
+      }
+    },
+    {
+      "id": "cred:bali-villas:stB1",
+      "type": "credential",
+      "label": "Stripe account",
+      "attrs": {
+        "credType": [
+          "stripeApi"
+        ],
+        "instance": "bali-villas",
+        "n8nId": "stB1"
+      }
+    },
+    {
+      "id": "env:acme-dental:SLACK_FRONTDESK_CHANNEL",
+      "type": "envvar",
+      "label": "SLACK_FRONTDESK_CHANNEL",
+      "attrs": {
+        "instance": "acme-dental"
+      }
+    },
+    {
+      "id": "env:bali-villas:OPENAI_MODEL",
+      "type": "envvar",
+      "label": "OPENAI_MODEL",
+      "attrs": {
+        "instance": "bali-villas"
+      }
+    },
+    {
+      "id": "env:bali-villas:RECEIPT_URL",
+      "type": "envvar",
+      "label": "RECEIPT_URL",
+      "attrs": {
+        "instance": "bali-villas"
+      }
+    },
+    {
+      "id": "hook:acme-dental:aD01:0",
+      "type": "webhook",
+      "label": "POST /acme/lead",
+      "attrs": {
+        "authentication": "none",
+        "instance": "acme-dental",
+        "method": "POST",
+        "path": "acme/lead"
+      }
+    },
+    {
+      "id": "hook:bali-villas:bV01:0",
+      "type": "webhook",
+      "label": "POST /villa/enquiry",
+      "attrs": {
+        "authentication": "headerAuth",
+        "instance": "bali-villas",
+        "method": "POST",
+        "path": "villa/enquiry"
+      }
+    },
+    {
+      "id": "hook:bali-villas:bV02:0",
+      "type": "webhook",
+      "label": "POST /villa/confirm",
+      "attrs": {
+        "authentication": "none",
+        "instance": "bali-villas",
+        "method": "POST",
+        "path": "villa/confirm"
+      }
+    },
+    {
+      "id": "host:api.openai.com",
+      "type": "host",
+      "label": "api.openai.com",
+      "attrs": {}
+    },
+    {
+      "id": "host:api.stripe.com",
+      "type": "host",
+      "label": "api.stripe.com",
+      "attrs": {}
+    },
+    {
+      "id": "host:assets.example-villas.com",
+      "type": "host",
+      "label": "assets.example-villas.com",
+      "attrs": {}
+    },
+    {
+      "id": "host:dynamic-expression",
+      "type": "host",
+      "label": "dynamic-expression",
+      "attrs": {}
+    },
+    {
+      "id": "host:enrich.example-data.com",
+      "type": "host",
+      "label": "enrich.example-data.com",
+      "attrs": {}
+    },
+    {
+      "id": "host:gmail.googleapis.com",
+      "type": "host",
+      "label": "gmail.googleapis.com",
+      "attrs": {}
+    },
+    {
+      "id": "host:hooks.example-status.io",
+      "type": "host",
+      "label": "hooks.example-status.io",
+      "attrs": {}
+    },
+    {
+      "id": "host:sheets.googleapis.com",
+      "type": "host",
+      "label": "sheets.googleapis.com",
+      "attrs": {}
+    },
+    {
+      "id": "host:slack.com",
+      "type": "host",
+      "label": "slack.com",
+      "attrs": {}
+    },
+    {
+      "id": "sched:daily at 09:00",
+      "type": "schedule",
+      "label": "daily at 09:00",
+      "attrs": {}
+    },
+    {
+      "id": "sched:every 1h",
+      "type": "schedule",
+      "label": "every 1h",
+      "attrs": {}
+    },
+    {
+      "id": "sched:weekly",
+      "type": "schedule",
+      "label": "weekly",
+      "attrs": {}
+    },
+    {
+      "id": "sheet:1AcmeAppointmentsDocId00000000000000000b",
+      "type": "sheet",
+      "label": "Acme Appointments",
+      "attrs": {
+        "documentId": "1AcmeAppointmentsDocId00000000000000000b",
+        "kind": "sheet",
+        "sheetNames": [
+          "Past visits",
+          "Tomorrow"
+        ]
+      }
+    },
+    {
+      "id": "sheet:1AcmeLeadsSheetDocId0000000000000000000a",
+      "type": "sheet",
+      "label": "Acme Leads",
+      "attrs": {
+        "documentId": "1AcmeLeadsSheetDocId0000000000000000000a",
+        "kind": "sheet",
+        "sheetNames": [
+          "Leads"
+        ]
+      }
+    },
+    {
+      "id": "sheet:1AcmePaymentsLedgerDocId0000000000000000c",
+      "type": "sheet",
+      "label": "Acme Payments Ledger",
+      "attrs": {
+        "documentId": "1AcmePaymentsLedgerDocId0000000000000000c",
+        "kind": "sheet",
+        "sheetNames": [
+          "Ledger"
+        ]
+      }
+    },
+    {
+      "id": "sheet:1BaliBookingsSheetDocId000000000000000d",
+      "type": "sheet",
+      "label": "Bali Bookings",
+      "attrs": {
+        "documentId": "1BaliBookingsSheetDocId000000000000000d",
+        "kind": "sheet",
+        "sheetNames": [
+          "Bookings",
+          "Enquiries"
+        ]
+      }
+    },
+    {
+      "id": "wf:acme-dental:aD01",
+      "type": "workflow",
+      "label": "Lead Intake",
+      "attrs": {
+        "active": true,
+        "errorWorkflow": "",
+        "instance": "acme-dental",
+        "isErrorHandler": false,
+        "n8nId": "aD01",
+        "triggerTypes": [
+          "webhook"
+        ]
+      }
+    },
+    {
+      "id": "wf:acme-dental:aD02",
+      "type": "workflow",
+      "label": "Lead Enrich",
+      "attrs": {
+        "active": true,
+        "errorWorkflow": "",
+        "instance": "acme-dental",
+        "isErrorHandler": false,
+        "n8nId": "aD02",
+        "triggerTypes": [
+          "executeWorkflow"
+        ]
+      }
+    },
+    {
+      "id": "wf:acme-dental:aD03",
+      "type": "workflow",
+      "label": "Notify Front Desk",
+      "attrs": {
+        "active": true,
+        "errorWorkflow": "",
+        "instance": "acme-dental",
+        "isErrorHandler": false,
+        "n8nId": "aD03",
+        "triggerTypes": [
+          "executeWorkflow"
+        ]
+      }
+    },
+    {
+      "id": "wf:acme-dental:aD04",
+      "type": "workflow",
+      "label": "Appointment Reminders",
+      "attrs": {
+        "active": true,
+        "errorWorkflow": "aD06",
+        "instance": "acme-dental",
+        "isErrorHandler": false,
+        "n8nId": "aD04",
+        "triggerTypes": [
+          "scheduleTrigger"
+        ]
+      }
+    },
+    {
+      "id": "wf:acme-dental:aD05",
+      "type": "workflow",
+      "label": "Stripe Payment Sync",
+      "attrs": {
+        "active": true,
+        "errorWorkflow": "aD06",
+        "instance": "acme-dental",
+        "isErrorHandler": false,
+        "n8nId": "aD05",
+        "triggerTypes": [
+          "scheduleTrigger"
+        ]
+      }
+    },
+    {
+      "id": "wf:acme-dental:aD06",
+      "type": "workflow",
+      "label": "Error Alerts",
+      "attrs": {
+        "active": true,
+        "errorWorkflow": "",
+        "instance": "acme-dental",
+        "isErrorHandler": true,
+        "n8nId": "aD06",
+        "triggerTypes": [
+          "errorTrigger"
+        ]
+      }
+    },
+    {
+      "id": "wf:acme-dental:aD07",
+      "type": "workflow",
+      "label": "Old Review Request (disabled)",
+      "attrs": {
+        "active": false,
+        "errorWorkflow": "",
+        "instance": "acme-dental",
+        "isErrorHandler": false,
+        "n8nId": "aD07",
+        "triggerTypes": [
+          "scheduleTrigger"
+        ]
+      }
+    },
+    {
+      "id": "wf:bali-villas:bV01",
+      "type": "workflow",
+      "label": "Villa Enquiry Webhook",
+      "attrs": {
+        "active": true,
+        "errorWorkflow": "",
+        "instance": "bali-villas",
+        "isErrorHandler": false,
+        "n8nId": "bV01",
+        "triggerTypes": [
+          "webhook"
+        ]
+      }
+    },
+    {
+      "id": "wf:bali-villas:bV02",
+      "type": "workflow",
+      "label": "Booking Confirmation",
+      "attrs": {
+        "active": true,
+        "errorWorkflow": "",
+        "instance": "bali-villas",
+        "isErrorHandler": false,
+        "n8nId": "bV02",
+        "triggerTypes": [
+          "webhook"
+        ]
+      }
+    },
+    {
+      "id": "wf:bali-villas:bV03",
+      "type": "workflow",
+      "label": "Receipt Builder",
+      "attrs": {
+        "active": true,
+        "errorWorkflow": "",
+        "instance": "bali-villas",
+        "isErrorHandler": false,
+        "n8nId": "bV03",
+        "triggerTypes": [
+          "executeWorkflow"
+        ]
+      }
+    }
+  ],
+  "links": [
+    {
+      "source": "wf:acme-dental:aD01",
+      "target": "cred:acme-dental:gsA1",
+      "rel": "uses_credential"
+    },
+    {
+      "source": "wf:acme-dental:aD01",
+      "target": "hook:acme-dental:aD01:0",
+      "rel": "exposes_webhook"
+    },
+    {
+      "source": "wf:acme-dental:aD01",
+      "target": "host:sheets.googleapis.com",
+      "rel": "calls_host"
+    },
+    {
+      "source": "wf:acme-dental:aD01",
+      "target": "sheet:1AcmeLeadsSheetDocId0000000000000000000a",
+      "rel": "reads_writes"
+    },
+    {
+      "source": "wf:acme-dental:aD01",
+      "target": "wf:acme-dental:aD02",
+      "rel": "calls_workflow"
+    },
+    {
+      "source": "wf:acme-dental:aD02",
+      "target": "cred:acme-dental:gsA1",
+      "rel": "uses_credential"
+    },
+    {
+      "source": "wf:acme-dental:aD02",
+      "target": "cred:acme-dental:oaA1",
+      "rel": "uses_credential"
+    },
+    {
+      "source": "wf:acme-dental:aD02",
+      "target": "host:api.openai.com",
+      "rel": "calls_host"
+    },
+    {
+      "source": "wf:acme-dental:aD02",
+      "target": "host:enrich.example-data.com",
+      "rel": "calls_host"
+    },
+    {
+      "source": "wf:acme-dental:aD02",
+      "target": "host:sheets.googleapis.com",
+      "rel": "calls_host"
+    },
+    {
+      "source": "wf:acme-dental:aD02",
+      "target": "sheet:1AcmeLeadsSheetDocId0000000000000000000a",
+      "rel": "reads_writes"
+    },
+    {
+      "source": "wf:acme-dental:aD02",
+      "target": "wf:acme-dental:aD03",
+      "rel": "calls_workflow"
+    },
+    {
+      "source": "wf:acme-dental:aD03",
+      "target": "cred:acme-dental:slA1",
+      "rel": "uses_credential"
+    },
+    {
+      "source": "wf:acme-dental:aD03",
+      "target": "env:acme-dental:SLACK_FRONTDESK_CHANNEL",
+      "rel": "reads_env"
+    },
+    {
+      "source": "wf:acme-dental:aD03",
+      "target": "host:slack.com",
+      "rel": "calls_host"
+    },
+    {
+      "source": "wf:acme-dental:aD04",
+      "target": "cred:acme-dental:gmA1",
+      "rel": "uses_credential"
+    },
+    {
+      "source": "wf:acme-dental:aD04",
+      "target": "cred:acme-dental:gsA1",
+      "rel": "uses_credential"
+    },
+    {
+      "source": "wf:acme-dental:aD04",
+      "target": "host:gmail.googleapis.com",
+      "rel": "calls_host"
+    },
+    {
+      "source": "wf:acme-dental:aD04",
+      "target": "host:sheets.googleapis.com",
+      "rel": "calls_host"
+    },
+    {
+      "source": "wf:acme-dental:aD04",
+      "target": "sched:daily at 09:00",
+      "rel": "triggered_by"
+    },
+    {
+      "source": "wf:acme-dental:aD04",
+      "target": "sheet:1AcmeAppointmentsDocId00000000000000000b",
+      "rel": "reads_writes"
+    },
+    {
+      "source": "wf:acme-dental:aD04",
+      "target": "wf:acme-dental:aD06",
+      "rel": "error_handler"
+    },
+    {
+      "source": "wf:acme-dental:aD05",
+      "target": "cred:acme-dental:gsA1",
+      "rel": "uses_credential"
+    },
+    {
+      "source": "wf:acme-dental:aD05",
+      "target": "cred:acme-dental:stA1",
+      "rel": "uses_credential"
+    },
+    {
+      "source": "wf:acme-dental:aD05",
+      "target": "host:api.stripe.com",
+      "rel": "calls_host"
+    },
+    {
+      "source": "wf:acme-dental:aD05",
+      "target": "host:hooks.example-status.io",
+      "rel": "calls_host"
+    },
+    {
+      "source": "wf:acme-dental:aD05",
+      "target": "host:sheets.googleapis.com",
+      "rel": "calls_host"
+    },
+    {
+      "source": "wf:acme-dental:aD05",
+      "target": "sched:every 1h",
+      "rel": "triggered_by"
+    },
+    {
+      "source": "wf:acme-dental:aD05",
+      "target": "sheet:1AcmePaymentsLedgerDocId0000000000000000c",
+      "rel": "reads_writes"
+    },
+    {
+      "source": "wf:acme-dental:aD05",
+      "target": "wf:acme-dental:aD06",
+      "rel": "error_handler"
+    },
+    {
+      "source": "wf:acme-dental:aD06",
+      "target": "cred:acme-dental:slA1",
+      "rel": "uses_credential"
+    },
+    {
+      "source": "wf:acme-dental:aD06",
+      "target": "host:slack.com",
+      "rel": "calls_host"
+    },
+    {
+      "source": "wf:acme-dental:aD07",
+      "target": "cred:acme-dental:gmA1",
+      "rel": "uses_credential"
+    },
+    {
+      "source": "wf:acme-dental:aD07",
+      "target": "cred:acme-dental:gsA1",
+      "rel": "uses_credential"
+    },
+    {
+      "source": "wf:acme-dental:aD07",
+      "target": "host:gmail.googleapis.com",
+      "rel": "calls_host"
+    },
+    {
+      "source": "wf:acme-dental:aD07",
+      "target": "host:sheets.googleapis.com",
+      "rel": "calls_host"
+    },
+    {
+      "source": "wf:acme-dental:aD07",
+      "target": "sched:weekly",
+      "rel": "triggered_by"
+    },
+    {
+      "source": "wf:acme-dental:aD07",
+      "target": "sheet:1AcmeAppointmentsDocId00000000000000000b",
+      "rel": "reads_writes"
+    },
+    {
+      "source": "wf:bali-villas:bV01",
+      "target": "cred:bali-villas:gsB1",
+      "rel": "uses_credential"
+    },
+    {
+      "source": "wf:bali-villas:bV01",
+      "target": "cred:bali-villas:haB1",
+      "rel": "uses_credential"
+    },
+    {
+      "source": "wf:bali-villas:bV01",
+      "target": "cred:bali-villas:oaB1",
+      "rel": "uses_credential"
+    },
+    {
+      "source": "wf:bali-villas:bV01",
+      "target": "env:bali-villas:OPENAI_MODEL",
+      "rel": "reads_env"
+    },
+    {
+      "source": "wf:bali-villas:bV01",
+      "target": "hook:bali-villas:bV01:0",
+      "rel": "exposes_webhook"
+    },
+    {
+      "source": "wf:bali-villas:bV01",
+      "target": "host:api.openai.com",
+      "rel": "calls_host"
+    },
+    {
+      "source": "wf:bali-villas:bV01",
+      "target": "host:sheets.googleapis.com",
+      "rel": "calls_host"
+    },
+    {
+      "source": "wf:bali-villas:bV01",
+      "target": "sheet:1BaliBookingsSheetDocId000000000000000d",
+      "rel": "reads_writes"
+    },
+    {
+      "source": "wf:bali-villas:bV02",
+      "target": "cred:bali-villas:gmB1",
+      "rel": "uses_credential"
+    },
+    {
+      "source": "wf:bali-villas:bV02",
+      "target": "cred:bali-villas:gsB1",
+      "rel": "uses_credential"
+    },
+    {
+      "source": "wf:bali-villas:bV02",
+      "target": "cred:bali-villas:stB1",
+      "rel": "uses_credential"
+    },
+    {
+      "source": "wf:bali-villas:bV02",
+      "target": "hook:bali-villas:bV02:0",
+      "rel": "exposes_webhook"
+    },
+    {
+      "source": "wf:bali-villas:bV02",
+      "target": "host:api.stripe.com",
+      "rel": "calls_host"
+    },
+    {
+      "source": "wf:bali-villas:bV02",
+      "target": "host:gmail.googleapis.com",
+      "rel": "calls_host"
+    },
+    {
+      "source": "wf:bali-villas:bV02",
+      "target": "host:sheets.googleapis.com",
+      "rel": "calls_host"
+    },
+    {
+      "source": "wf:bali-villas:bV02",
+      "target": "sheet:1BaliBookingsSheetDocId000000000000000d",
+      "rel": "reads_writes"
+    },
+    {
+      "source": "wf:bali-villas:bV02",
+      "target": "wf:bali-villas:bV03",
+      "rel": "calls_workflow"
+    },
+    {
+      "source": "wf:bali-villas:bV03",
+      "target": "env:bali-villas:RECEIPT_URL",
+      "rel": "reads_env"
+    },
+    {
+      "source": "wf:bali-villas:bV03",
+      "target": "host:assets.example-villas.com",
+      "rel": "calls_host"
+    },
+    {
+      "source": "wf:bali-villas:bV03",
+      "target": "host:dynamic-expression",
+      "rel": "calls_host"
+    }
+  ]
+}

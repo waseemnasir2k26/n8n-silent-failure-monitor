@@ -1,0 +1,156 @@
+{
+  "name": "Weekly retainer report (draft only)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "weeksInterval": 1,
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "id": "a1000000-0000-4000-8000-000000000001",
+      "name": "Every Monday 07:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:5678/api/v1/executions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "limit",
+              "value": "250"
+            },
+            {
+              "name": "includeData",
+              "value": "false"
+            }
+          ]
+        },
+        "options": {
+          "pagination": {
+            "pagination": {
+              "parameters": {
+                "parameters": [
+                  {
+                    "type": "qs",
+                    "name": "cursor",
+                    "value": "={{ $response.body.nextCursor }}"
+                  }
+                ]
+              },
+              "paginationCompleteWhen": "other",
+              "completeExpression": "={{ !$response.body.nextCursor }}",
+              "limitPagesFetched": true,
+              "maxRequests": 20
+            }
+          }
+        }
+      },
+      "id": "a1000000-0000-4000-8000-000000000002",
+      "name": "Get executions (metadata only)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        0
+      ],
+      "notes": "Create an HTTP Header Auth credential: name X-N8N-API-KEY, value = your n8n API key. includeData=false keeps payloads out."
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "\"use strict\";\r\n// Self-contained on purpose (no requires): scripts/build-workflow.js inlines everything\r\n// above the \"exports\" marker into the n8n Code node, so the CLI and the n8n route\r\n// share one implementation of the numbers and the weekly email.\r\n\r\nconst DAY = 86400000;\r\n\r\n// Bidi control characters can visually reorder text in a client-facing report; strip them.\r\nconst BIDI = /[\\u202A-\\u202E\\u2066-\\u2069]/g;\r\n\r\nfunction esc(v) {\r\n  return String(v == null ? \"\" : v)\r\n    .replace(BIDI, \"\")\r\n    .replace(/&/g, \"&amp;\")\r\n    .replace(/</g, \"&lt;\")\r\n    .replace(/>/g, \"&gt;\")\r\n    .replace(/\"/g, \"&quot;\")\r\n    .replace(/'/g, \"&#39;\");\r\n}\r\n\r\nfunction dayOf(ms) {\r\n  return new Date(ms).toISOString().slice(0, 10);\r\n}\r\n\r\nfunction dayStartUtc(dateStr) {\r\n  const m = /^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(String(dateStr));\r\n  if (!m)\r\n    throw new Error('Invalid date \"' + dateStr + '\", expected YYYY-MM-DD');\r\n  const ms = Date.UTC(+m[1], +m[2] - 1, +m[3]);\r\n  if (dayOf(ms) !== dateStr) throw new Error('Invalid date \"' + dateStr + '\"');\r\n  return ms;\r\n}\r\n\r\nfunction normalizeStatus(e) {\r\n  const s = String(e.status || \"\").toLowerCase();\r\n  if (s === \"success\") return \"success\";\r\n  if (s === \"error\" || s === \"crashed\" || s === \"failed\") return \"error\";\r\n  if (!s && e.finished === true) return \"success\";\r\n  return \"other\";\r\n}\r\n\r\n// Whitelist: only metadata survives. Payload fields (data, workflowData, ...) are dropped here.\r\nfunction normalizeExecution(e) {\r\n  if (!e || e.workflowId == null) return null;\r\n  // ISO strings or epoch milliseconds\r\n  const toMs = (v) => (typeof v === \"number\" ? v : Date.parse(v));\r\n  const startMs = toMs(e.startedAt);\r\n  if (!Number.isFinite(startMs) || Math.abs(startMs) > 8.64e15) return null;\r\n  const stopMs = toMs(e.stoppedAt);\r\n  return {\r\n    id: e.id == null ? null : String(e.id),\r\n    workflowId: String(e.workflowId),\r\n    status: normalizeStatus(e),\r\n    startedAt: new Date(startMs).toISOString(),\r\n    stoppedAt:\r\n      Number.isFinite(stopMs) && Math.abs(stopMs) <= 8.64e15\r\n        ? new Date(stopMs).toISOString()\r\n        : null,\r\n    startMs,\r\n  };\r\n}\r\n\r\nfunction round1(n) {\r\n  return Math.round(n * 10) / 10;\r\n}\r\n\r\nfunction pctChange(cur, prev) {\r\n  return prev > 0 ? round1(((cur - prev) / prev) * 100) : null;\r\n}\r\n\r\n// Same workflowId:id counts once (overlapping live pages, hand-edited offline files).\r\nfunction dedupeExecutions(list) {\r\n  const seen = new Set();\r\n  const out = [];\r\n  for (const e of list) {\r\n    // Rows without an id cannot be matched, so they are never deduplicated.\r\n    if (e.id != null) {\r\n      const k = e.workflowId + \":\" + e.id;\r\n      if (seen.has(k)) continue;\r\n      seen.add(k);\r\n    }\r\n    out.push(e);\r\n  }\r\n  return out;\r\n}\r\n\r\nfunction computePeriod(execs, workflows, startMs, endMs, recoveryMin) {\r\n  const tracked = new Map(workflows.map((w) => [String(w.id), w]));\r\n  const mine = execs\r\n    .filter((e) => tracked.has(e.workflowId) && e.status !== \"other\")\r\n    .sort((a, b) => a.startMs - b.startMs);\r\n  // Recovery: per workflow, one pass over time-ordered runs. A success recovers at most one\r\n  // failure (the oldest one still inside the window); a failure is recovered at most once.\r\n  const recoveredSet = new Set();\r\n  const byWf = new Map();\r\n  for (const e of mine) {\r\n    if (!byWf.has(e.workflowId)) byWf.set(e.workflowId, []);\r\n    byWf.get(e.workflowId).push(e);\r\n  }\r\n  const win = recoveryMin * 60000;\r\n  for (const list of byWf.values()) {\r\n    list.sort(\r\n      (x, y) =>\r\n        x.startMs - y.startMs ||\r\n        (x.status === \"success\" ? -1 : 1) - (y.status === \"success\" ? -1 : 1),\r\n    );\r\n    const q = [];\r\n    let head = 0;\r\n    for (const e of list) {\r\n      if (e.status === \"error\") {\r\n        q.push(e);\r\n        continue;\r\n      }\r\n      while (head < q.length && e.startMs - q[head].startMs > win) head++;\r\n      if (head < q.length) recoveredSet.add(q[head++]);\r\n    }\r\n  }\r\n  const per = new Map();\r\n  for (const w of workflows) {\r\n    per.set(String(w.id), {\r\n      id: String(w.id),\r\n      label: w.label || String(w.id),\r\n      minutesPerRun: w.minutes == null ? null : w.minutes,\r\n      runs: 0,\r\n      success: 0,\r\n      errors: 0,\r\n      recovered: 0,\r\n    });\r\n  }\r\n  const daily = new Map();\r\n  for (let t = startMs; t < endMs; t += DAY)\r\n    daily.set(dayOf(t), { date: dayOf(t), runs: 0, errors: 0 });\r\n\r\n  for (const e of mine) {\r\n    if (e.startMs < startMs || e.startMs >= endMs) continue;\r\n    const w = per.get(e.workflowId);\r\n    const d = daily.get(dayOf(e.startMs));\r\n    w.runs++;\r\n    d.runs++;\r\n    if (e.status === \"success\") {\r\n      w.success++;\r\n    } else {\r\n      w.errors++;\r\n      d.errors++;\r\n      if (recoveredSet.has(e)) w.recovered++;\r\n    }\r\n  }\r\n\r\n  const perWorkflow = [...per.values()].map((w) => ({\r\n    ...w,\r\n    errorRate: w.runs ? round1((w.errors / w.runs) * 100) : 0,\r\n    hoursSaved:\r\n      w.minutesPerRun == null\r\n        ? null\r\n        : round1((w.success * w.minutesPerRun) / 60),\r\n    hoursSavedRaw:\r\n      w.minutesPerRun == null ? 0 : (w.success * w.minutesPerRun) / 60,\r\n  }));\r\n  const runs = perWorkflow.reduce((a, w) => a + w.runs, 0);\r\n  const success = perWorkflow.reduce((a, w) => a + w.success, 0);\r\n  const errors = perWorkflow.reduce((a, w) => a + w.errors, 0);\r\n  const recovered = perWorkflow.reduce((a, w) => a + w.recovered, 0);\r\n  const hoursRaw = perWorkflow.reduce((a, w) => a + w.hoursSavedRaw, 0);\r\n  const dailyArr = [...daily.values()];\r\n  return {\r\n    runs,\r\n    success,\r\n    errors,\r\n    recovered,\r\n    unrecovered: errors - recovered,\r\n    errorRate: runs ? round1((errors / runs) * 100) : 0,\r\n    hoursSavedRaw: hoursRaw,\r\n    perWorkflow: perWorkflow.map(({ hoursSavedRaw, ...rest }) => rest),\r\n    topFailing: perWorkflow\r\n      .filter((w) => w.errors > 0)\r\n      .sort((a, b) => b.errors - a.errors || a.label.localeCompare(b.label))\r\n      .slice(0, 3)\r\n      .map((w) => ({\r\n        id: w.id,\r\n        label: w.label,\r\n        errors: w.errors,\r\n        runs: w.runs,\r\n        errorRate: w.errorRate,\r\n      })),\r\n    busiestDays: dailyArr\r\n      .filter((d) => d.runs > 0)\r\n      .sort((a, b) => b.runs - a.runs || a.date.localeCompare(b.date))\r\n      .slice(0, 3),\r\n    daily: dailyArr,\r\n    missingEstimates: perWorkflow\r\n      .filter((w) => w.minutesPerRun == null)\r\n      .map((w) => w.label),\r\n  };\r\n}\r\n\r\n// execs: normalized executions. workflows: [{id,label,minutes|null}]. win/prev: {startMs,endMs} (end exclusive).\r\nfunction computeReport({\r\n  executions,\r\n  workflows,\r\n  win,\r\n  prev,\r\n  hourlyRate,\r\n  recoveryMinutes,\r\n  label,\r\n  truncated,\r\n}) {\r\n  executions = dedupeExecutions(executions);\r\n  const rec = recoveryMinutes == null ? 60 : recoveryMinutes;\r\n  const cur = computePeriod(executions, workflows, win.startMs, win.endMs, rec);\r\n  const old = computePeriod(\r\n    executions,\r\n    workflows,\r\n    prev.startMs,\r\n    prev.endMs,\r\n    rec,\r\n  );\r\n  const rate = hourlyRate == null ? null : hourlyRate;\r\n  const money = (h) => (rate == null ? null : Math.round(h * rate));\r\n  const anyEstimate = workflows.some((w) => w.minutes != null);\r\n  const { hoursSavedRaw, ...curRest } = cur;\r\n  return {\r\n    label,\r\n    truncated: !!truncated,\r\n    period: {\r\n      start: dayOf(win.startMs),\r\n      end: dayOf(win.endMs - 1),\r\n      days: Math.round((win.endMs - win.startMs) / DAY),\r\n    },\r\n    ...curRest,\r\n    hoursSaved: anyEstimate ? round1(hoursSavedRaw) : null,\r\n    value: anyEstimate ? money(hoursSavedRaw) : null,\r\n    hourlyRate: rate,\r\n    recoveryMinutes: rec,\r\n    previous: {\r\n      period: { start: dayOf(prev.startMs), end: dayOf(prev.endMs - 1) },\r\n      runs: old.runs,\r\n      success: old.success,\r\n      errors: old.errors,\r\n      errorRate: old.errorRate,\r\n      hoursSaved: anyEstimate ? round1(old.hoursSavedRaw) : null,\r\n      value: anyEstimate ? money(old.hoursSavedRaw) : null,\r\n    },\r\n    change: {\r\n      runs: { abs: cur.runs - old.runs, pct: pctChange(cur.runs, old.runs) },\r\n      errors: {\r\n        abs: cur.errors - old.errors,\r\n        pct: pctChange(cur.errors, old.errors),\r\n      },\r\n      errorRatePoints: round1(cur.errorRate - old.errorRate),\r\n      hoursSaved: anyEstimate\r\n        ? {\r\n            abs: round1(cur.hoursSavedRaw - old.hoursSavedRaw),\r\n            pct: pctChange(cur.hoursSavedRaw, old.hoursSavedRaw),\r\n          }\r\n        : null,\r\n    },\r\n  };\r\n}\r\n\r\n// ---- weekly email (md + html from one model) ----\r\n\r\nfunction fmtChange(c, unit) {\r\n  if (!c) return \"\";\r\n  if (c.pct === null)\r\n    return c.abs === 0\r\n      ? \"no change\"\r\n      : (c.abs > 0 ? \"+\" : \"\") +\r\n          c.abs +\r\n          unit +\r\n          \" (no data for the previous period)\";\r\n  return (c.abs > 0 ? \"+\" : \"\") + c.pct + \"%\";\r\n}\r\n\r\nfunction pluralize(n, one, many) {\r\n  return n + \" \" + (n === 1 ? one : many);\r\n}\r\n\r\nfunction oneLine(v) {\r\n  return String(v == null ? \"\" : v)\r\n    .replace(BIDI, \"\")\r\n    .replace(/[\\r\\n\\u2028\\u2029]+/g, \" \")\r\n    .trim();\r\n}\r\n\r\n// Escape markdown link and emphasis syntax in user-supplied text (used for the .md output only).\r\nfunction mdEsc(v) {\r\n  return String(v == null ? \"\" : v).replace(/[\\[\\]()*_`]/g, \"\\\\$&\");\r\n}\r\n\r\nfunction emailModel(r, opts, userText) {\r\n  const o = opts || {};\r\n  const u = userText || ((x) => x);\r\n  const contact = u(oneLine(o.contactName)) || \"there\";\r\n  const cur = o.currency || \"$\";\r\n  const lines = { ran: [], issues: [], done: [], next: [] };\r\n  lines.ran.push(\r\n    pluralize(r.runs, \"run\", \"runs\") +\r\n      \" completed, \" +\r\n      r.success +\r\n      \" successful (\" +\r\n      (r.runs ? round1((r.success / r.runs) * 100) : 0) +\r\n      \"%).\",\r\n  );\r\n  if (r.hoursSaved != null) {\r\n    let s = \"Estimated time saved: \" + r.hoursSaved + \" hours\";\r\n    if (r.value != null)\r\n      s += \" (about \" + cur + r.value + \" at \" + cur + r.hourlyRate + \"/hour)\";\r\n    s +=\r\n      \". This is runs multiplied by the per-run minutes we agreed, not a measurement.\";\r\n    lines.ran.push(s);\r\n  } else {\r\n    lines.ran.push(\r\n      \"Time saved is not calculated because no per-run estimates are configured.\",\r\n    );\r\n  }\r\n  if (r.previous.runs > 0) {\r\n    lines.ran.push(\r\n      \"Versus the previous 7 days: runs \" +\r\n        fmtChange(r.change.runs, \"\") +\r\n        (r.change.hoursSaved\r\n          ? \", estimated hours saved \" + fmtChange(r.change.hoursSaved, \"h\")\r\n          : \"\") +\r\n        \".\",\r\n    );\r\n  }\r\n  if (r.errors === 0) {\r\n    lines.issues.push(\"No failed runs this week.\");\r\n  } else {\r\n    lines.issues.push(\r\n      pluralize(r.errors, \"run failed\", \"runs failed\") +\r\n        \" (\" +\r\n        r.errorRate +\r\n        \"% of runs). \" +\r\n        r.recovered +\r\n        \" recovered automatically on a later run within \" +\r\n        r.recoveryMinutes +\r\n        \" minutes; \" +\r\n        r.unrecovered +\r\n        (r.unrecovered === 1 ? \" needs\" : \" need\") +\r\n        \" a manual look.\",\r\n    );\r\n    for (const w of r.topFailing)\r\n      lines.issues.push(\r\n        u(w.label) +\r\n          \": \" +\r\n          pluralize(w.errors, \"failure\", \"failures\") +\r\n          \" out of \" +\r\n          w.runs +\r\n          \" runs.\",\r\n      );\r\n  }\r\n  if (r.truncated)\r\n    lines.issues.unshift(\r\n      \"Warning: this report may be incomplete. The fetch stopped at its page limit, so counts can be too low.\",\r\n    );\r\n  for (const n of o.notes || []) lines.done.push(u(n));\r\n  lines.next.push(\r\n    u(o.nextStep) ||\r\n      \"Reply if anything above looks off, or if there is a process you want automated next.\",\r\n  );\r\n  const subject =\r\n    (o.subject || \"Your automations this week\") +\r\n    \": \" +\r\n    r.runs +\r\n    \" runs\" +\r\n    (r.hoursSaved != null\r\n      ? \", about \" + r.hoursSaved + \" hours saved (estimate)\"\r\n      : \"\") +\r\n    (r.errors ? \", \" + pluralize(r.errors, \"error\", \"errors\") : \", no errors\");\r\n  const sections = [\r\n    { title: \"What ran\", items: lines.ran },\r\n    { title: \"Issues\", items: lines.issues },\r\n  ];\r\n  if (lines.done.length)\r\n    sections.push({ title: \"Work done this week\", items: lines.done });\r\n  if (o.narrative)\r\n    sections.unshift({\r\n      title:\r\n        \"Summary (drafted by an AI model from the totals below, check before sending)\",\r\n      items: [u(o.narrative)],\r\n      plain: true,\r\n    });\r\n  sections.push({ title: \"Next step\", items: lines.next, plain: true });\r\n  const intro =\r\n    \"Here is the weekly summary for \" +\r\n    r.period.start +\r\n    \" to \" +\r\n    r.period.end +\r\n    \" (UTC).\";\r\n  const signoff = o.agency ? u(o.agency) : \"\";\r\n  return { subject, greeting: \"Hi \" + contact + \",\", intro, sections, signoff };\r\n}\r\n\r\nfunction weeklyEmailMd(m) {\r\n  const out = [\r\n    \"Subject: \" + oneLine(m.subject),\r\n    \"\",\r\n    oneLine(m.greeting),\r\n    \"\",\r\n    oneLine(m.intro),\r\n    \"\",\r\n  ];\r\n  for (const s of m.sections) {\r\n    out.push(\"**\" + oneLine(s.title) + \"**\", \"\");\r\n    for (const it of s.items)\r\n      out.push(s.plain ? oneLine(it) : \"- \" + oneLine(it));\r\n    out.push(\"\");\r\n  }\r\n  out.push(\"Thanks,\");\r\n  if (m.signoff) out.push(oneLine(m.signoff));\r\n  return out.join(\"\\n\") + \"\\n\";\r\n}\r\n\r\nfunction weeklyEmailHtml(m) {\r\n  const p = \"margin:0 0 12px;line-height:1.5\";\r\n  const parts = [\r\n    '<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><title>' +\r\n      esc(m.subject) +\r\n      \"</title></head>\",\r\n    '<body style=\"margin:0;padding:24px;background:#ffffff;color:#1f2937;font-family:Arial,Helvetica,sans-serif;font-size:15px\">',\r\n    '<div style=\"max-width:560px;margin:0 auto\">',\r\n    '<p style=\"' + p + '\">' + esc(m.greeting) + \"</p>\",\r\n    '<p style=\"' + p + '\">' + esc(m.intro) + \"</p>\",\r\n  ];\r\n  for (const s of m.sections) {\r\n    parts.push(\r\n      '<h2 style=\"font-size:15px;margin:20px 0 6px;color:#111827\">' +\r\n        esc(s.title) +\r\n        \"</h2>\",\r\n    );\r\n    if (s.plain) {\r\n      for (const it of s.items)\r\n        parts.push('<p style=\"' + p + '\">' + esc(it) + \"</p>\");\r\n    } else {\r\n      parts.push(\r\n        '<ul style=\"margin:0 0 12px;padding-left:20px;line-height:1.5\">' +\r\n          s.items.map((it) => \"<li>\" + esc(it) + \"</li>\").join(\"\") +\r\n          \"</ul>\",\r\n      );\r\n    }\r\n  }\r\n  parts.push(\r\n    '<p style=\"' +\r\n      p +\r\n      '\">Thanks,' +\r\n      (m.signoff ? \"<br>\" + esc(m.signoff) : \"\") +\r\n      \"</p>\",\r\n    \"</div></body></html>\",\r\n  );\r\n  return parts.join(\"\\n\") + \"\\n\";\r\n}\r\n\r\nfunction weeklyEmail(r, opts) {\r\n  const m = emailModel(r, opts);\r\n  const mMd = emailModel(r, opts, mdEsc);\r\n  return {\r\n    subject: m.subject,\r\n    md: weeklyEmailMd(mMd),\r\n    html: weeklyEmailHtml(m),\r\n  };\r\n}\r\n\r\n\n// ===== EDIT THIS BLOCK =====\nconst CONFIG = {\n  client: 'Client Name',\n  contactName: '', // first name for the greeting, e.g. 'Sarah'. Empty = 'Hi there,'\n  agency: 'Your Agency',\n  currency: '$',\n  hourlyRate: 35, // set to null to hide money value\n  recoveryWindowMinutes: 60,\n  // minutes = YOUR estimate of time saved per successful run. Leave null if you have no estimate.\n  workflows: [\n    { id: '101', label: 'Lead intake to CRM', minutes: 6 },\n    { id: '102', label: 'Invoice reminders', minutes: 4 },\n  ],\n  notes: [], // optional lines you write yourself, shown under \"Work done this week\"\n  nextStep: '',\n  to: 'client@example.com',\n};\n// ===== END EDIT =====\n\nconst rows = [];\nfor (const item of $input.all()) {\n  const j = item.json;\n  if (Array.isArray(j.data)) rows.push(...j.data);\n  else if (j.workflowId != null) rows.push(j);\n}\n// The HTTP node pages with nextCursor up to its maxRequests cap. If the last page still has a cursor, the cap was hit.\nconst items = $input.all();\nconst last = items.length ? items[items.length - 1].json : null;\nconst executions = rows.map(normalizeExecution).filter(Boolean);\nconst nowMs = Date.now();\nconst todayMs = Date.UTC(new Date(nowMs).getUTCFullYear(), new Date(nowMs).getUTCMonth(), new Date(nowMs).getUTCDate());\n// truncated only if a cursor is left AND the oldest row fetched is still inside the 14-day window\nconst oldest = executions.length ? Math.min(...executions.map((e) => e.startMs)) : Infinity;\nconst truncated = !!(last && last.nextCursor) && oldest >= todayMs - 14 * DAY;\nconst now = new Date();\nconst endMs = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()); // today 00:00 UTC, exclusive\nconst win = { startMs: endMs - 7 * DAY, endMs };\nconst prev = { startMs: endMs - 14 * DAY, endMs: endMs - 7 * DAY };\nconst report = computeReport({\n  executions, workflows: CONFIG.workflows, win, prev,\n  hourlyRate: CONFIG.hourlyRate, recoveryMinutes: CONFIG.recoveryWindowMinutes, label: 'weekly', truncated,\n});\nconst email = weeklyEmail(report, {\n  client: CONFIG.client, contactName: CONFIG.contactName, agency: CONFIG.agency, currency: CONFIG.currency,\n  notes: CONFIG.notes, nextStep: CONFIG.nextStep,\n});\nreturn [{ json: { to: CONFIG.to, subject: email.subject, html: email.html, md: email.md, report } }];\n"
+      },
+      "id": "a1000000-0000-4000-8000-000000000003",
+      "name": "Compute metrics and email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "operation": "create",
+        "subject": "={{ $json.subject }}",
+        "emailType": "html",
+        "message": "={{ $json.html }}",
+        "options": {
+          "sendTo": "={{ $json.to }}"
+        }
+      },
+      "id": "a1000000-0000-4000-8000-000000000004",
+      "name": "Create Gmail draft (does not send)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        720,
+        0
+      ],
+      "notes": "Draft only. Review it in Gmail, then send yourself. Attach your Gmail credential."
+    }
+  ],
+  "connections": {
+    "Every Monday 07:00": {
+      "main": [
+        [
+          {
+            "node": "Get executions (metadata only)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get executions (metadata only)": {
+      "main": [
+        [
+          {
+            "node": "Compute metrics and email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compute metrics and email": {
+      "main": [
+        [
+          {
+            "node": "Create Gmail draft (does not send)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false,
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

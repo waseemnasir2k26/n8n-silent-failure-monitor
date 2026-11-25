@@ -1,0 +1,55 @@
+{
+  "id": "aD06",
+  "name": "Error Alerts",
+  "active": true,
+  "nodes": [
+    {
+      "id": "n19",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        4180,
+        300
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "n20",
+      "name": "Alert #ops",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [
+        4400,
+        300
+      ],
+      "parameters": {
+        "channel": "#ops",
+        "text": "Workflow failed"
+      },
+      "credentials": {
+        "slackApi": {
+          "id": "slA1",
+          "name": "Slack account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Alert #ops",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

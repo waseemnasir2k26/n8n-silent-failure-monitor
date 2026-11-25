@@ -1,0 +1,203 @@
+"use strict";
+const path = require("node:path");
+const fs = require("node:fs");
+const { parseArgs } = require("node:util");
+const { generate, loadDir, writeFiles } = require("./generate");
+const { runGitleaks, gitleaksStatus } = require("./gate");
+const { fetchWorkflows, normaliseBase, scrubKey } = require("./api");
+
+const HELP = `n8n-handover-docs: generate a client handover pack from n8n workflows
+
+Usage:
+  n8n-handover-docs --from-dir <folder> [options]
+  n8n-handover-docs --live [--tag <name>] [options]
+
+Input:
+  --from-dir <folder>   folder of exported workflow .json files (searched recursively)
+  --live                read from the n8n public API (GET only).
+                        Env: N8N_BASE_URL, N8N_API_KEY (the key is never logged or written)
+  --tag <name>          with --live: only workflows with this tag
+  --active-only         with --live: only active workflows
+  --limit <n>           with --live: at most n workflows
+
+Output:
+  --out <folder>        default ./handover  (index.html, index.md, <workflow>.md, inventory.csv)
+  --title <text>        title of the pack (e.g. the client name)
+  --show-hosts          show real hostnames (webhook URLs, HTTP endpoints). Default: hidden
+  --show-webhook-paths  print full webhook paths (default: first 4 characters, they act as bearer tokens)
+  --redact-contacts     also hide e-mails and phone numbers in names, tags and credential names (sticky notes always, see --keep-contacts)
+  --keep-contacts       do not hide e-mails and phone numbers in sticky notes
+  --include-notes       include sticky-note text (hidden by default; redacted best-effort)
+  --no-gitleaks         skip the gitleaks pass of the final scan (it runs automatically when gitleaks is on PATH)
+  --allow-findings      write the pack even if the final secret scan finds something (exit code 3 otherwise)
+  --diagram-fallback    show diagrams as text only, with the reason, no script
+  --offline             no CDN script in index.html; Mermaid diagrams stay as text
+  --llm                 add a plain-English AI summary per workflow. Needs HANDOVER_OLLAMA_MODEL,
+                        or GROQ_API_KEY, or GEMINI_API_KEY. Only names, types and connections are sent.
+  --date <YYYY-MM-DD>   date printed in the pack (default: today)
+  -h, --help
+`;
+
+async function main(argv, env = process.env, io = {}) {
+  const out = io.out || ((s) => process.stdout.write(s + "\n"));
+  const err = io.err || ((s) => process.stderr.write(s + "\n"));
+  let args;
+  try {
+    args = parseArgs({
+      args: argv,
+      options: {
+        "from-dir": { type: "string" },
+        live: { type: "boolean" },
+        tag: { type: "string" },
+        "active-only": { type: "boolean" },
+        limit: { type: "string" },
+        out: { type: "string" },
+        title: { type: "string" },
+        "show-hosts": { type: "boolean" },
+        "show-webhook-paths": { type: "boolean" },
+        "redact-contacts": { type: "boolean" },
+        "keep-contacts": { type: "boolean" },
+        "allow-findings": { type: "boolean" },
+        "diagram-fallback": { type: "boolean" },
+        "include-notes": { type: "boolean" },
+        "no-gitleaks": { type: "boolean" },
+        offline: { type: "boolean" },
+        llm: { type: "boolean" },
+        date: { type: "string" },
+        help: { type: "boolean", short: "h" },
+      },
+      allowPositionals: false,
+    }).values;
+  } catch (e) {
+    err(`${e.message}\n\n${HELP}`);
+    return 2;
+  }
+  if (args.help) {
+    out(HELP);
+    return 0;
+  }
+  if (!!args["from-dir"] === !!args.live) {
+    err(`Choose exactly one of --from-dir or --live.\n\n${HELP}`);
+    return 2;
+  }
+  if (args.date && !/^\d{4}-\d{2}-\d{2}$/.test(args.date)) {
+    err("--date must look like 2026-01-31");
+    return 2;
+  }
+  const limit = args.limit ? Number.parseInt(args.limit, 10) : 0;
+  if (args.limit && !(limit > 0)) {
+    err("--limit must be a positive number");
+    return 2;
+  }
+
+  const { N8N_API_KEY: rawKey } = env;
+  const apiKey = typeof rawKey === "string" ? rawKey : "";
+  let workflows;
+  let baseUrl = null;
+  try {
+    if (args.live) {
+      if (!env.N8N_BASE_URL) throw new Error("N8N_BASE_URL is not set");
+      baseUrl = normaliseBase(env.N8N_BASE_URL);
+      workflows = await fetchWorkflows({
+        baseUrl,
+        apiKey,
+        tag: args.tag,
+        activeOnly: args["active-only"],
+        limit,
+        fetchImpl: io.fetchImpl || globalThis.fetch,
+      });
+      if (args.tag) {
+        const t = args.tag.toLowerCase();
+        workflows = workflows.filter(
+          (w) =>
+            !Array.isArray(w.tags) ||
+            w.tags.some((x) => String((x && x.name) || x).toLowerCase() === t),
+        );
+      }
+    } else {
+      const dir = path.resolve(args["from-dir"]);
+      if (!fs.existsSync(dir) || !fs.statSync(dir).isDirectory()) throw new Error(`Folder not found: ${args["from-dir"]}`);
+      workflows = loadDir(dir, (w) =>
+        err(`warning: ${w}`),
+      );
+      if (limit) workflows = workflows.slice(0, limit);
+    }
+  } catch (e) {
+    err(`error: ${scrubKey(e.message, apiKey)}`);
+    return 1;
+  }
+  if (!workflows.length) {
+    err("No workflows found. Nothing written.");
+    return 1;
+  }
+
+  // independent second detector: fail closed if it is installed but broken, say so if it is absent
+  let glStatus = "skipped";
+  if (!args["no-gitleaks"]) {
+    glStatus = gitleaksStatus();
+    if (glStatus === "broken") {
+      err('gitleaks is installed but broken (it did not answer "gitleaks version"). Failing closed: nothing written. Fix or remove gitleaks, or pass --no-gitleaks to run without the second detector.');
+      return 3;
+    }
+    if (glStatus === "absent") err("warning: gitleaks was not found on PATH, so the independent gitleaks scan was not run (recommended: https://github.com/gitleaks/gitleaks). Use --no-gitleaks to silence this.");
+  }
+  const gitleaksNote =
+    glStatus === "available" ? "independent gitleaks scan: run, no findings" : glStatus === "absent" ? "independent gitleaks scan: not run (gitleaks not installed)" : "independent gitleaks scan: not run (--no-gitleaks)";
+
+  let result;
+  try {
+    result = await generate(workflows, {
+      gitleaksNote,
+      showHosts: !!args["show-hosts"],
+      showWebhookPaths: !!args["show-webhook-paths"],
+      redactContacts: !!args["redact-contacts"],
+      keepContacts: !!args["keep-contacts"],
+      diagramFallback: !!args["diagram-fallback"],
+      includeNotes: !!args["include-notes"],
+      baseUrl,
+      offline: !!args.offline,
+      llm: !!args.llm,
+      title: args.title,
+      date: args.date,
+      env,
+      apiKey,
+      fetchImpl: io.fetchImpl || globalThis.fetch,
+    });
+  } catch (e) {
+    err(`error: could not build the pack: ${scrubKey(e && e.message, apiKey)}`);
+    return 1;
+  }
+  let gitleaksRan = false;
+  if (glStatus === "available") {
+    const g = runGitleaks(result.files);
+    gitleaksRan = g.ran;
+    result.findings.push(...g.findings);
+  }
+  if (result.findings.length) {
+    err(`The final scan found ${result.findings.length} possible secret(s) in the generated pack (values not shown):`);
+    for (const f of result.findings.slice(0, 50)) err(`  ${f.file}:${f.line}  ${f.kind}`);
+    if (!args["allow-findings"]) {
+      err("Nothing was written. Fix the source workflow, or re-run with --allow-findings to write the pack anyway.");
+      return 3;
+    }
+    err("--allow-findings set: writing the pack anyway. Review those lines before sharing.");
+  }
+  const outDir = path.resolve(args.out || "handover");
+  writeFiles(outDir, result.files);
+  result.warnings.forEach((w) => err(`warning: ${scrubKey(w, apiKey)}`));
+  const nWarn = result.items.reduce((n, { m }) => n + m.warnings.length, 0);
+  out(
+    `Wrote ${Object.keys(result.files).length} files for ${result.items.length} workflow(s) to ${outDir}`,
+  );
+  const hidden = result.items.reduce((n, { m }) => n + m.hiddenNotes, 0);
+  const redacted = result.items.reduce((n, { m }) => n + m.redactedNames, 0);
+  out(
+    `${hidden} sticky note(s) ${args["include-notes"] ? "included (best-effort redacted)" : "hidden (use --include-notes to include them)"}, ${redacted} name(s) partly redacted, final scan: built-in detector${gitleaksRan ? " + gitleaks" : " only"}, ${result.findings.length} finding(s).`,
+  );
+  out(
+    `${nWarn} warning(s) to review before handover (see "Needs attention" in index.html).`,
+  );
+  return 0;
+}
+
+module.exports = { main, HELP };

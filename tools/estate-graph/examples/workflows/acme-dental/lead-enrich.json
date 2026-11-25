@@ -1,0 +1,174 @@
+{
+  "id": "aD02",
+  "name": "Lead Enrich",
+  "active": true,
+  "nodes": [
+    {
+      "id": "n4",
+      "name": "When called",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        880,
+        300
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "n5",
+      "name": "Company lookup",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        300
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://enrich.example-data.com/v2/people?email={{ $json.email }}&api_key=sk-FAKEDEMOKEY0123456789abcdefghij",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer FAKEDEMOTOKEN0123456789abcdefghijklmn"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "n6",
+      "name": "Score lead",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1,
+      "position": [
+        1320,
+        300
+      ],
+      "parameters": {
+        "resource": "text",
+        "prompt": "Score this lead 1-10"
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "oaA1",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "id": "n7",
+      "name": "Update lead",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        1540,
+        300
+      ],
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1AcmeLeadsSheetDocId0000000000000000000a",
+          "mode": "list",
+          "cachedResultName": "Acme Leads"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Leads",
+          "mode": "name",
+          "cachedResultName": "Leads"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gsA1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "id": "n8",
+      "name": "Notify",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        300
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "aD03",
+          "mode": "list",
+          "cachedResultName": "Notify Front Desk"
+        }
+      }
+    },
+    {
+      "id": "n9",
+      "name": "Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1980,
+        300
+      ],
+      "parameters": {
+        "content": "Prod token FAKE_SLACK_BOT_TOKEN_aZ9kQ2mX7pL4vR8tW1nB rotate monthly"
+      }
+    }
+  ],
+  "connections": {
+    "When called": {
+      "main": [
+        [
+          {
+            "node": "Company lookup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Company lookup": {
+      "main": [
+        [
+          {
+            "node": "Score lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Score lead": {
+      "main": [
+        [
+          {
+            "node": "Update lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update lead": {
+      "main": [
+        [
+          {
+            "node": "Notify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

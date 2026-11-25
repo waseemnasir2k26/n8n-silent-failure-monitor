@@ -1,0 +1,73 @@
+{
+  "id": "bV03",
+  "name": "Receipt Builder",
+  "active": true,
+  "nodes": [
+    {
+      "id": "n32",
+      "name": "When called",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        7040,
+        300
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "n33",
+      "name": "Render PDF",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        7260,
+        300
+      ],
+      "parameters": {
+        "url": "={{ $env.RECEIPT_URL }}/render",
+        "method": "POST"
+      }
+    },
+    {
+      "id": "n34",
+      "name": "Fetch logo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        7480,
+        300
+      ],
+      "parameters": {
+        "url": "https://assets.example-villas.com/logo.png"
+      }
+    }
+  ],
+  "connections": {
+    "When called": {
+      "main": [
+        [
+          {
+            "node": "Render PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Render PDF": {
+      "main": [
+        [
+          {
+            "node": "Fetch logo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

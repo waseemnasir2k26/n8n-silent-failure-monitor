@@ -1,0 +1,104 @@
+{
+  "id": "aD07",
+  "name": "Old Review Request (disabled)",
+  "active": false,
+  "nodes": [
+    {
+      "id": "n21",
+      "name": "Weekly",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        4620,
+        300
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "n22",
+      "name": "Read patients",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        4840,
+        300
+      ],
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "1AcmeAppointmentsDocId00000000000000000b",
+          "mode": "list",
+          "cachedResultName": "Acme Appointments"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Past visits",
+          "mode": "name",
+          "cachedResultName": "Past visits"
+        }
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gsA1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "id": "n23",
+      "name": "Ask for review",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 1,
+      "position": [
+        5060,
+        300
+      ],
+      "parameters": {
+        "operation": "send"
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "gmA1",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Weekly": {
+      "main": [
+        [
+          {
+            "node": "Read patients",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read patients": {
+      "main": [
+        [
+          {
+            "node": "Ask for review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

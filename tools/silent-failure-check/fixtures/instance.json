@@ -1,0 +1,764 @@
+{
+  "_note": "Fake demo data. Instance and workflows are invented. Use with --now 2026-11-20T12:00:00Z",
+  "workflows": [
+    {
+      "id": "101",
+      "name": "Lead intake sync (hourly)",
+      "active": true,
+      "createdAt": "2026-01-05T08:00:00.000Z",
+      "updatedAt": "2026-01-05T08:00:00.000Z",
+      "nodes": [
+        {
+          "id": "n1",
+          "name": "Schedule",
+          "type": "n8n-nodes-base.scheduleTrigger",
+          "typeVersion": 1.2,
+          "position": [
+            0,
+            0
+          ],
+          "parameters": {
+            "rule": {
+              "interval": [
+                {
+                  "field": "hours",
+                  "hoursInterval": 1
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "n2",
+          "name": "Set",
+          "type": "n8n-nodes-base.set",
+          "typeVersion": 3,
+          "position": [
+            200,
+            0
+          ],
+          "parameters": {}
+        }
+      ],
+      "connections": {},
+      "settings": {}
+    },
+    {
+      "id": "102",
+      "name": "Daily invoice export",
+      "active": true,
+      "createdAt": "2026-01-05T08:00:00.000Z",
+      "updatedAt": "2026-01-05T08:00:00.000Z",
+      "nodes": [
+        {
+          "id": "n1",
+          "name": "Schedule",
+          "type": "n8n-nodes-base.scheduleTrigger",
+          "typeVersion": 1.2,
+          "position": [
+            0,
+            0
+          ],
+          "parameters": {
+            "rule": {
+              "interval": [
+                {
+                  "field": "days",
+                  "daysInterval": 1,
+                  "triggerAtHour": 8
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "n2",
+          "name": "Set",
+          "type": "n8n-nodes-base.set",
+          "typeVersion": 3,
+          "position": [
+            200,
+            0
+          ],
+          "parameters": {}
+        }
+      ],
+      "connections": {},
+      "settings": {}
+    },
+    {
+      "id": "103",
+      "name": "CRM push (every 15 min)",
+      "active": true,
+      "createdAt": "2026-01-05T08:00:00.000Z",
+      "updatedAt": "2026-01-05T08:00:00.000Z",
+      "nodes": [
+        {
+          "id": "n1",
+          "name": "Schedule",
+          "type": "n8n-nodes-base.scheduleTrigger",
+          "typeVersion": 1.2,
+          "position": [
+            0,
+            0
+          ],
+          "parameters": {
+            "rule": {
+              "interval": [
+                {
+                  "field": "minutes",
+                  "minutesInterval": 15
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "n2",
+          "name": "Set",
+          "type": "n8n-nodes-base.set",
+          "typeVersion": 3,
+          "position": [
+            200,
+            0
+          ],
+          "parameters": {}
+        }
+      ],
+      "connections": {},
+      "settings": {}
+    },
+    {
+      "id": "104",
+      "name": "Order intake webhook",
+      "active": true,
+      "createdAt": "2026-01-05T08:00:00.000Z",
+      "updatedAt": "2026-01-05T08:00:00.000Z",
+      "nodes": [
+        {
+          "id": "n1",
+          "name": "Webhook",
+          "type": "n8n-nodes-base.webhook",
+          "typeVersion": 2,
+          "position": [
+            0,
+            0
+          ],
+          "parameters": {
+            "path": "demo-path",
+            "httpMethod": "POST"
+          }
+        },
+        {
+          "id": "n2",
+          "name": "Set",
+          "type": "n8n-nodes-base.set",
+          "typeVersion": 3,
+          "position": [
+            200,
+            0
+          ],
+          "parameters": {}
+        }
+      ],
+      "connections": {},
+      "settings": {}
+    },
+    {
+      "id": "105",
+      "name": "Contact form webhook",
+      "active": true,
+      "createdAt": "2026-01-05T08:00:00.000Z",
+      "updatedAt": "2026-01-05T08:00:00.000Z",
+      "nodes": [
+        {
+          "id": "n1",
+          "name": "Webhook",
+          "type": "n8n-nodes-base.webhook",
+          "typeVersion": 2,
+          "position": [
+            0,
+            0
+          ],
+          "parameters": {
+            "path": "demo-path",
+            "httpMethod": "POST"
+          }
+        },
+        {
+          "id": "n2",
+          "name": "Set",
+          "type": "n8n-nodes-base.set",
+          "typeVersion": 3,
+          "position": [
+            200,
+            0
+          ],
+          "parameters": {}
+        }
+      ],
+      "connections": {},
+      "settings": {}
+    },
+    {
+      "id": "106",
+      "name": "Old review request (disabled)",
+      "active": false,
+      "createdAt": "2026-01-05T08:00:00.000Z",
+      "updatedAt": "2026-01-05T08:00:00.000Z",
+      "nodes": [
+        {
+          "id": "n1",
+          "name": "Schedule",
+          "type": "n8n-nodes-base.scheduleTrigger",
+          "typeVersion": 1.2,
+          "position": [
+            0,
+            0
+          ],
+          "parameters": {
+            "rule": {
+              "interval": [
+                {
+                  "field": "days",
+                  "daysInterval": 1
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "n2",
+          "name": "Set",
+          "type": "n8n-nodes-base.set",
+          "typeVersion": 3,
+          "position": [
+            200,
+            0
+          ],
+          "parameters": {}
+        }
+      ],
+      "connections": {},
+      "settings": {}
+    },
+    {
+      "id": "107",
+      "name": "Weekday morning digest (cron)",
+      "active": true,
+      "createdAt": "2026-01-05T08:00:00.000Z",
+      "updatedAt": "2026-01-05T08:00:00.000Z",
+      "nodes": [
+        {
+          "id": "n1",
+          "name": "Schedule",
+          "type": "n8n-nodes-base.scheduleTrigger",
+          "typeVersion": 1.2,
+          "position": [
+            0,
+            0
+          ],
+          "parameters": {
+            "rule": {
+              "interval": [
+                {
+                  "field": "cronExpression",
+                  "expression": "0 9 * * 1-5"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "n2",
+          "name": "Set",
+          "type": "n8n-nodes-base.set",
+          "typeVersion": 3,
+          "position": [
+            200,
+            0
+          ],
+          "parameters": {}
+        }
+      ],
+      "connections": {},
+      "settings": {}
+    },
+    {
+      "id": "108",
+      "name": "Nightly backup, +08:00 run 47h ago",
+      "active": true,
+      "createdAt": "2026-01-05T08:00:00.000Z",
+      "updatedAt": "2026-01-05T08:00:00.000Z",
+      "nodes": [
+        {
+          "id": "n1",
+          "name": "Schedule",
+          "type": "n8n-nodes-base.scheduleTrigger",
+          "typeVersion": 1.2,
+          "position": [
+            0,
+            0
+          ],
+          "parameters": {
+            "rule": {
+              "interval": [
+                {
+                  "field": "days",
+                  "daysInterval": 1,
+                  "triggerAtHour": 21
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "n2",
+          "name": "Set",
+          "type": "n8n-nodes-base.set",
+          "typeVersion": 3,
+          "position": [
+            200,
+            0
+          ],
+          "parameters": {}
+        }
+      ],
+      "connections": {},
+      "settings": {
+        "timezone": "Asia/Makassar"
+      }
+    },
+    {
+      "id": "109",
+      "name": "Nightly report, +08:00 run 51h ago",
+      "active": true,
+      "createdAt": "2026-01-05T08:00:00.000Z",
+      "updatedAt": "2026-01-05T08:00:00.000Z",
+      "nodes": [
+        {
+          "id": "n1",
+          "name": "Schedule",
+          "type": "n8n-nodes-base.scheduleTrigger",
+          "typeVersion": 1.2,
+          "position": [
+            0,
+            0
+          ],
+          "parameters": {
+            "rule": {
+              "interval": [
+                {
+                  "field": "days",
+                  "daysInterval": 1,
+                  "triggerAtHour": 17
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "n2",
+          "name": "Set",
+          "type": "n8n-nodes-base.set",
+          "typeVersion": 3,
+          "position": [
+            200,
+            0
+          ],
+          "parameters": {}
+        }
+      ],
+      "connections": {},
+      "settings": {
+        "timezone": "Asia/Makassar"
+      }
+    },
+    {
+      "id": "110",
+      "name": "Hourly sheet import (never ran)",
+      "active": true,
+      "createdAt": "2026-01-05T08:00:00.000Z",
+      "updatedAt": "2026-01-05T08:00:00.000Z",
+      "nodes": [
+        {
+          "id": "n1",
+          "name": "Schedule",
+          "type": "n8n-nodes-base.scheduleTrigger",
+          "typeVersion": 1.2,
+          "position": [
+            0,
+            0
+          ],
+          "parameters": {
+            "rule": {
+              "interval": [
+                {
+                  "field": "hours",
+                  "hoursInterval": 1
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "n2",
+          "name": "Set",
+          "type": "n8n-nodes-base.set",
+          "typeVersion": 3,
+          "position": [
+            200,
+            0
+          ],
+          "parameters": {}
+        }
+      ],
+      "connections": {},
+      "settings": {}
+    },
+    {
+      "id": "111",
+      "name": "Just activated hourly job",
+      "active": true,
+      "createdAt": "2026-11-20T11:40:00.000Z",
+      "updatedAt": "2026-11-20T11:40:00.000Z",
+      "nodes": [
+        {
+          "id": "n1",
+          "name": "Schedule",
+          "type": "n8n-nodes-base.scheduleTrigger",
+          "typeVersion": 1.2,
+          "position": [
+            0,
+            0
+          ],
+          "parameters": {
+            "rule": {
+              "interval": [
+                {
+                  "field": "hours",
+                  "hoursInterval": 1
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "n2",
+          "name": "Set",
+          "type": "n8n-nodes-base.set",
+          "typeVersion": 3,
+          "position": [
+            200,
+            0
+          ],
+          "parameters": {}
+        }
+      ],
+      "connections": {},
+      "settings": {}
+    },
+    {
+      "id": "112",
+      "name": "Manual cleanup tool",
+      "active": true,
+      "createdAt": "2026-01-05T08:00:00.000Z",
+      "updatedAt": "2026-01-05T08:00:00.000Z",
+      "nodes": [
+        {
+          "id": "n1",
+          "name": "Manual",
+          "type": "n8n-nodes-base.manualTrigger",
+          "typeVersion": 1,
+          "position": [
+            0,
+            0
+          ],
+          "parameters": {}
+        },
+        {
+          "id": "n2",
+          "name": "Set",
+          "type": "n8n-nodes-base.set",
+          "typeVersion": 3,
+          "position": [
+            200,
+            0
+          ],
+          "parameters": {}
+        }
+      ],
+      "connections": {},
+      "settings": {}
+    },
+    {
+      "id": "113",
+      "name": "Flaky API sync (hourly, mixed)",
+      "active": true,
+      "createdAt": "2026-01-05T08:00:00.000Z",
+      "updatedAt": "2026-01-05T08:00:00.000Z",
+      "nodes": [
+        {
+          "id": "n1",
+          "name": "Schedule",
+          "type": "n8n-nodes-base.scheduleTrigger",
+          "typeVersion": 1.2,
+          "position": [
+            0,
+            0
+          ],
+          "parameters": {
+            "rule": {
+              "interval": [
+                {
+                  "field": "hours",
+                  "hoursInterval": 1
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "n2",
+          "name": "Set",
+          "type": "n8n-nodes-base.set",
+          "typeVersion": 3,
+          "position": [
+            200,
+            0
+          ],
+          "parameters": {}
+        }
+      ],
+      "connections": {},
+      "settings": {}
+    }
+  ],
+  "executions": [
+    {
+      "id": "1000",
+      "workflowId": "101",
+      "status": "success",
+      "mode": "trigger",
+      "finished": true,
+      "startedAt": "2026-11-20T11:40:00.000Z",
+      "stoppedAt": "2026-11-20T11:40:00.000Z"
+    },
+    {
+      "id": "1001",
+      "workflowId": "101",
+      "status": "success",
+      "mode": "trigger",
+      "finished": true,
+      "startedAt": "2026-11-20T10:40:00.000Z",
+      "stoppedAt": "2026-11-20T10:40:00.000Z"
+    },
+    {
+      "id": "1002",
+      "workflowId": "101",
+      "status": "success",
+      "mode": "trigger",
+      "finished": true,
+      "startedAt": "2026-11-20T09:40:00.000Z",
+      "stoppedAt": "2026-11-20T09:40:00.000Z"
+    },
+    {
+      "id": "1003",
+      "workflowId": "101",
+      "status": "success",
+      "mode": "trigger",
+      "finished": true,
+      "startedAt": "2026-11-20T08:40:00.000Z",
+      "stoppedAt": "2026-11-20T08:40:00.000Z"
+    },
+    {
+      "id": "1004",
+      "workflowId": "101",
+      "status": "success",
+      "mode": "trigger",
+      "finished": true,
+      "startedAt": "2026-11-20T07:40:00.000Z",
+      "stoppedAt": "2026-11-20T07:40:00.000Z"
+    },
+    {
+      "id": "1005",
+      "workflowId": "102",
+      "status": "success",
+      "mode": "trigger",
+      "finished": true,
+      "startedAt": "2026-11-17T04:00:00.000Z",
+      "stoppedAt": "2026-11-17T04:00:00.000Z"
+    },
+    {
+      "id": "1006",
+      "workflowId": "102",
+      "status": "success",
+      "mode": "trigger",
+      "finished": true,
+      "startedAt": "2026-11-16T04:00:00.000Z",
+      "stoppedAt": "2026-11-16T04:00:00.000Z"
+    },
+    {
+      "id": "1007",
+      "workflowId": "102",
+      "status": "success",
+      "mode": "trigger",
+      "finished": true,
+      "startedAt": "2026-11-15T04:00:00.000Z",
+      "stoppedAt": "2026-11-15T04:00:00.000Z"
+    },
+    {
+      "id": "1008",
+      "workflowId": "102",
+      "status": "success",
+      "mode": "trigger",
+      "finished": true,
+      "startedAt": "2026-11-14T04:00:00.000Z",
+      "stoppedAt": "2026-11-14T04:00:00.000Z"
+    },
+    {
+      "id": "1009",
+      "workflowId": "103",
+      "status": "error",
+      "mode": "trigger",
+      "finished": false,
+      "startedAt": "2026-11-20T11:55:00.000Z",
+      "stoppedAt": "2026-11-20T11:55:00.000Z"
+    },
+    {
+      "id": "1010",
+      "workflowId": "103",
+      "status": "error",
+      "mode": "trigger",
+      "finished": false,
+      "startedAt": "2026-11-20T11:40:00.000Z",
+      "stoppedAt": "2026-11-20T11:40:00.000Z"
+    },
+    {
+      "id": "1011",
+      "workflowId": "103",
+      "status": "error",
+      "mode": "trigger",
+      "finished": false,
+      "startedAt": "2026-11-20T11:25:00.000Z",
+      "stoppedAt": "2026-11-20T11:25:00.000Z"
+    },
+    {
+      "id": "1012",
+      "workflowId": "103",
+      "status": "error",
+      "mode": "trigger",
+      "finished": false,
+      "startedAt": "2026-11-20T11:10:00.000Z",
+      "stoppedAt": "2026-11-20T11:10:00.000Z"
+    },
+    {
+      "id": "1013",
+      "workflowId": "103",
+      "status": "success",
+      "mode": "trigger",
+      "finished": true,
+      "startedAt": "2026-11-20T10:55:00.000Z",
+      "stoppedAt": "2026-11-20T10:55:00.000Z"
+    },
+    {
+      "id": "1014",
+      "workflowId": "103",
+      "status": "success",
+      "mode": "trigger",
+      "finished": true,
+      "startedAt": "2026-11-20T10:40:00.000Z",
+      "stoppedAt": "2026-11-20T10:40:00.000Z"
+    },
+    {
+      "id": "1015",
+      "workflowId": "103",
+      "status": "success",
+      "mode": "trigger",
+      "finished": true,
+      "startedAt": "2026-11-20T10:25:00.000Z",
+      "stoppedAt": "2026-11-20T10:25:00.000Z"
+    },
+    {
+      "id": "1016",
+      "workflowId": "103",
+      "status": "success",
+      "mode": "trigger",
+      "finished": true,
+      "startedAt": "2026-11-20T10:10:00.000Z",
+      "stoppedAt": "2026-11-20T10:10:00.000Z"
+    },
+    {
+      "id": "1017",
+      "workflowId": "104",
+      "status": "success",
+      "mode": "trigger",
+      "finished": true,
+      "startedAt": "2026-11-19T06:00:00.000Z",
+      "stoppedAt": "2026-11-19T06:00:00.000Z"
+    },
+    {
+      "id": "1018",
+      "workflowId": "105",
+      "status": "success",
+      "mode": "trigger",
+      "finished": true,
+      "startedAt": "2026-11-19T06:00:00.000Z",
+      "stoppedAt": "2026-11-19T06:00:00.000Z"
+    },
+    {
+      "id": "1019",
+      "workflowId": "107",
+      "status": "success",
+      "mode": "trigger",
+      "finished": true,
+      "startedAt": "2026-11-20T09:00:00.000Z",
+      "stoppedAt": "2026-11-20T09:00:00.000Z"
+    },
+    {
+      "id": "1020",
+      "workflowId": "108",
+      "status": "success",
+      "mode": "trigger",
+      "finished": true,
+      "startedAt": "2026-11-18T21:00:00.000+08:00",
+      "stoppedAt": "2026-11-18T21:00:00.000+08:00"
+    },
+    {
+      "id": "1021",
+      "workflowId": "109",
+      "status": "success",
+      "mode": "trigger",
+      "finished": true,
+      "startedAt": "2026-11-18T17:00:00.000+08:00",
+      "stoppedAt": "2026-11-18T17:00:00.000+08:00"
+    },
+    {
+      "id": "1022",
+      "workflowId": "113",
+      "status": "error",
+      "mode": "trigger",
+      "finished": false,
+      "startedAt": "2026-11-20T11:50:00.000Z",
+      "stoppedAt": "2026-11-20T11:50:00.000Z"
+    },
+    {
+      "id": "1023",
+      "workflowId": "113",
+      "status": "error",
+      "mode": "trigger",
+      "finished": false,
+      "startedAt": "2026-11-20T10:50:00.000Z",
+      "stoppedAt": "2026-11-20T10:50:00.000Z"
+    },
+    {
+      "id": "1024",
+      "workflowId": "113",
+      "status": "success",
+      "mode": "trigger",
+      "finished": true,
+      "startedAt": "2026-11-20T08:50:00.000Z",
+      "stoppedAt": "2026-11-20T08:50:00.000Z"
+    }
+  ]
+}

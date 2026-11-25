@@ -1,0 +1,10 @@
+{
+  "defaults": { "factor": 2, "failRuns": 3 },
+  "clients": [
+    {
+      "name": "Demo Client",
+      "file": "instance.json",
+      "webhookMaxSilence": { "workflows": { "Order intake webhook": "24h" } }
+    }
+  ]
+}

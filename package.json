@@ -1,0 +1,17 @@
+{
+  "name": "n8n-silent-failure-monitor",
+  "version": "0.1.0",
+  "description": "Free toolkit for agencies that run n8n for clients. Headline check: finds workflows that stopped running, not just ones that errored.",
+  "license": "MIT",
+  "author": "Waseem Nasir <waseem@skynetjoe.com> (https://skynetjoe.com)",
+  "homepage": "https://waseemnasir2k26.github.io/n8n-silent-failure-monitor/",
+  "repository": { "type": "git", "url": "git+https://github.com/waseemnasir2k26/n8n-silent-failure-monitor.git" },
+  "bin": { "nsfm": "bin/nsfm.js" },
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "check": "node bin/nsfm.js check",
+    "demo": "node bin/nsfm.js check --config tools/silent-failure-check/fixtures/demo-config.json --now 2026-11-20T12:00:00Z",
+    "test": "node scripts/test-all.js"
+  },
+  "keywords": ["n8n", "monitoring", "silent-failure", "agency", "automation", "workflow"]
+}

@@ -1,0 +1,6 @@
+node_modules/
+estate-graph-out/
+.critic/
+.env
+.env.*
+*.log

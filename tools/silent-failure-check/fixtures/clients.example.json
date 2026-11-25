@@ -1,0 +1,16 @@
+{
+  "defaults": { "factor": 2, "failRuns": 3 },
+  "clients": [
+    {
+      "name": "Client A",
+      "urlEnv": "CLIENT_A_N8N_URL",
+      "keyEnv": "CLIENT_A_N8N_KEY",
+      "webhookMaxSilence": { "default": "24h", "workflows": { "Order intake webhook": "6h" } }
+    },
+    {
+      "name": "Client B",
+      "urlEnv": "CLIENT_B_N8N_URL",
+      "keyEnv": "CLIENT_B_N8N_KEY"
+    }
+  ]
+}

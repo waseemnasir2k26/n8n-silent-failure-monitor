@@ -1,0 +1,55 @@
+{
+  "id": "aD03",
+  "name": "Notify Front Desk",
+  "active": true,
+  "nodes": [
+    {
+      "id": "n10",
+      "name": "When called",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        2200,
+        300
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "n11",
+      "name": "Post to #front-desk",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [
+        2420,
+        300
+      ],
+      "parameters": {
+        "channel": "={{ $env.SLACK_FRONTDESK_CHANNEL }}",
+        "text": "New lead"
+      },
+      "credentials": {
+        "slackApi": {
+          "id": "slA1",
+          "name": "Slack account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When called": {
+      "main": [
+        [
+          {
+            "node": "Post to #front-desk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}
